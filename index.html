@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KING — Web</title>
+    <style>
+        :root {
+            --primary: #58CC02;
+            --bg: #FAFDFF;
+            --card: #ffffff;
+            --text: #1f1f1f;
+            --muted: #6b7280;
+            --danger: #e11d48;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+            background: var(--bg);
+            color: var(--text)
+        }
+
+        .app {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, .06), 0 1px 2px rgba(0, 0, 0, .04);
+            padding: 16px
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 10px
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            gap: 12px
+        }
+
+        .back {
+            background: #e5e7eb;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 14px;
+            cursor: pointer
+        }
+
+        .title {
+            font-weight: 800;
+            font-size: 28px
+        }
+
+        .subtitle {
+            color: var(--muted)
+        }
+
+        .stripe {
+            height: 6px;
+            background: var(--primary);
+            border-radius: 6px
+        }
+
+        .row {
+            display: flex;
+            gap: 8px;
+            align-items: center
+        }
+
+        .col {
+            display: flex;
+            flex-direction: column;
+            gap: 8px
+        }
+
+        .btn {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 16px;
+            cursor: pointer;
+            font-weight: 700
+        }
+
+        .btn.secondary {
+            background: #e5e7eb;
+            color: #111
+        }
+
+        .btn.small {
+            padding: 8px 10px;
+            border-radius: 10px
+        }
+
+        .btn:disabled {
+            opacity: .5;
+            cursor: not-allowed
+        }
+
+        .input {
+            padding: 10px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px
+        }
+
+        .muted {
+            color: var(--muted)
+        }
+
+        /* Table */
+        .table-wrap {
+            height: 520px;
+            overflow: auto
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 6px;
+            font-size: 18px
+        }
+
+        thead th {
+            position: sticky;
+            top: 0;
+            background: var(--bg);
+            z-index: 2;
+            padding: 8px 6px;
+            color: var(--muted);
+            text-align: left
+        }
+
+        tbody td,
+        tbody th {
+            background: #fff;
+            padding: 12px 8px;
+            text-align: center
+        }
+
+        tbody th {
+            color: var(--muted);
+            width: 48px
+        }
+
+        tfoot td {
+            background: #fff;
+            padding: 12px 8px;
+            font-weight: 800;
+            font-size: 16px;
+            position: sticky;
+            bottom: 0;
+            z-index: 1
+        }
+
+        .names-pill {
+            display: flex;
+            gap: 8px;
+            align-items: center
+        }
+
+        .pill {
+            background: #fff;
+            border-radius: 999px;
+            padding: 8px 12px;
+            font-weight: 700
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .35);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 999 /* <--- ADD THIS LINE */
+        }
+
+        .modal.open {
+            display: flex
+        }
+
+        /* Buttons grid for numbers */
+        .numgrid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px
+        }
+
+        /* Highlight current round */
+        .current-row th,
+        .current-row td {
+            background: rgba(88, 204, 2, 0.12) !important;
+        }
+
+        .current-row td:last-child {
+            font-weight: 800;
+        }
+
+
+        /* Small screens */
+        @media (max-width:640px) {
+            .table-wrap {
+                height: 420px
+            }
+
+            .title {
+                font-size: 24px
+            }
+
+            table {
+                font-size: 16px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <div class="card header">
+            <div class="topbar">
+                <button id="backBtn" class="back">🏠 მთავარი</button>
+                <div class="col">
+                    <div class="title">KING</div>
+                    <div id="subtitle" class="subtitle"></div>
+                </div>
+            </div>
+            <div class="stripe"></div>
+        </div>
+
+        <div id="setupCard" class="card">
+            <div class="col">
+                <div class="row" style="justify-content:space-between;align-items:center">
+                    <div class="muted">მოთამაშის სახელები</div>
+                </div>
+                <div class="col">
+                    <div class="row"><label style="min-width:90px">მოთამაშე 1</label><input id="p1" class="input"
+                            placeholder="სახელი..." autocomplete="off" /></div>
+                    <div class="row"><label style="min-width:90px">მოთამაშე 2</label><input id="p2" class="input"
+                            placeholder="სახელი..." autocomplete="off" /></div>
+                    <div class="row"><label style="min-width:90px">მოთამაშე 3</label><input id="p3" class="input"
+                            placeholder="სახელი..." autocomplete="off" /></div>
+                </div>
+                <div id="setupError" class="muted" style="color:var(--danger)"></div>
+                <button id="startBtn" class="btn">თამაშის დაწყება</button>
+            </div>
+        </div>
+
+        <div id="gameArea" style="display:none" class="col">
+            <div class="card">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th id="thP1"></th>
+                                <th id="thP2"></th>
+                                <th id="thP3"></th>
+                                <th>რაუნდი</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody"></tbody>
+                        <tfoot>
+                            <tr>
+                                <td><strong>ჯამი</strong></td>
+                                <td id="tot1">0</td>
+                                <td id="tot2">0</td>
+                                <td id="tot3">0</td>
+                                <td id="footerActions"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div id="question" class="row" style="font-size:18px;font-weight:700"></div>
+                <div id="buttonsRow" class="row" style="flex-wrap:wrap;justify-content:center"></div>
+                <div id="status" class="muted"></div>
+                <div id="finishActions" class="row" style="justify-content:center;gap:8px;margin-top:10px"></div>
+            </div>
+
+            <div class="card">
+                <div style="font-weight:700;font-size:18px">ℹ️ ინსტრუქცია</div>
+                <div id="instruction" class="muted" style="margin-top:6px"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="card" style="max-width:420px">
+            <div style="font-weight:800;font-size:18px;margin-bottom:8px">🤔 გათიშვა?</div>
+            <div class="muted" style="margin-bottom:12px">ნამდვილად გსურს გათიშვა?</div>
+            <div class="row" style="justify-content:flex-end;gap:8px">
+                <button id="noQuit" class="btn secondary">არა</button>
+                <button id="yesQuit" class="btn">დიახ</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Game definition (matches your Kivy app) ---
+        const HEART = '♥️';
+        const QUEEN = '👑';
+        const JACK = '🃏';
+        const PLUS = '➕';
+        const PASS = '❌';
+
+        const ROUNDS = [
+            { type: 'king', title: 'King', icon: HEART, penalty: -40 },
+            { type: 'king', title: 'King', icon: HEART, penalty: -40 },
+            { type: 'king', title: 'King', icon: HEART, penalty: -40 },
+            { type: 'multi', title: 'Queen', icon: QUEEN, penaltyPer: -10, total: 4 },
+            { type: 'multi', title: 'Queen', icon: QUEEN, penaltyPer: -10, total: 4 },
+            { type: 'multi', title: 'Queen', icon: QUEEN, penaltyPer: -10, total: 4 },
+            { type: 'multi', title: 'Jack', icon: JACK, penaltyPer: -10, total: 4 },
+            { type: 'multi', title: 'Jack', icon: JACK, penaltyPer: -10, total: 4 },
+            { type: 'multi', title: 'Jack', icon: JACK, penaltyPer: -10, total: 4 },
+            { type: 'multi', title: 'Hearts', icon: HEART, penaltyPer: -5, total: 8 },
+            { type: 'multi', title: 'Hearts', icon: HEART, penaltyPer: -5, total: 8 },
+            { type: 'multi', title: 'Hearts', icon: HEART, penaltyPer: -5, total: 8 },
+            { type: 'multi', title: 'Pass', icon: PASS, penaltyPer: -4, total: 10 },
+            { type: 'multi', title: 'Pass', icon: PASS, penaltyPer: -4, total: 10 },
+            { type: 'multi', title: 'Pass', icon: PASS, penaltyPer: -4, total: 10 },
+            { type: 'multi', title: 'Last', icon: '2', penaltyPer: -20, total: 2 },
+            { type: 'multi', title: 'Last', icon: '2', penaltyPer: -20, total: 2 },
+            { type: 'multi', title: 'Last', icon: '2', penaltyPer: -20, total: 2 },
+            { type: 'multi', title: 'Plus', icon: PLUS, penaltyPer: +8, total: 10 },
+            { type: 'multi', title: 'Plus', icon: PLUS, penaltyPer: +8, total: 10 },
+            { type: 'multi', title: 'Plus', icon: PLUS, penaltyPer: +8, total: 10 },
+            { type: 'multi', title: 'Plus', icon: PLUS, penaltyPer: +8, total: 10 },
+            { type: 'multi', title: 'Plus', icon: PLUS, penaltyPer: +8, total: 10 },
+            { type: 'multi', title: 'Plus', icon: PLUS, penaltyPer: +8, total: 10 },
+            { type: 'multi', title: 'Plus', icon: PLUS, penaltyPer: +8, total: 10 },
+            { type: 'multi', title: 'Plus', icon: PLUS, penaltyPer: +8, total: 10 },
+            { type: 'multi', title: 'Plus', icon: PLUS, penaltyPer: +8, total: 10 },
+        ];
+
+        // --- State ---
+        let players = ['Player A', 'Player B', 'Player C'];
+        let totals = [0, 0, 0];
+        let currentRound = 0;
+        let multiCounts = {};
+        let multiChosen = {};
+        let whoIndex = 0;
+        let history = [];
+        let restoring = false;
+
+        // --- DOM helpers ---
+        const $ = sel => document.querySelector(sel);
+        const el = (tag, opts = {}) => Object.assign(document.createElement(tag), opts);
+
+        // --- Elements ---
+        const subtitle = $('#subtitle');
+        const backBtn = $('#backBtn');
+        const setupCard = $('#setupCard');
+        const gameArea = $('#gameArea');
+        const thP1 = $('#thP1'), thP2 = $('#thP2'), thP3 = $('#thP3');
+        const tbody = $('#tbody');
+        const tot1 = $('#tot1'), tot2 = $('#tot2'), tot3 = $('#tot3');
+        const question = $('#question');
+        const buttonsRow = $('#buttonsRow');
+        const instruction = $('#instruction');
+        const status = $('#status');
+        const finishActions = $('#finishActions');
+        function renderFinishActionsInCard(){
+            if (!finishActions) return;
+            finishActions.innerHTML = `
+              <button id="startAgainBtn" class="btn secondary">თავიდან დაწყება</button>
+              <button id="homeBtn" class="btn">მთავარი</button>
+            `;
+            const startAgainBtn = document.getElementById('startAgainBtn');
+            const homeBtn = document.getElementById('homeBtn');
+            if (startAgainBtn) startAgainBtn.onclick = startGame;
+            if (homeBtn) homeBtn.onclick = goHome;
+        }
+        const startBtn = $('#startBtn');
+        const setupError = $('#setupError');
+        const modal = $('#modal');
+        const noQuit = $('#noQuit');
+        const yesQuit = $('#yesQuit');
+        
+        // Hide back button on main (setup) screen
+        backBtn.style.display = 'none';
+
+        // --- Modal logic ---
+        backBtn.onclick = () => modal.classList.add('open');
+        noQuit.onclick = () => modal.classList.remove('open');
+        yesQuit.onclick = () => { modal.classList.remove('open'); goHome(); };
+
+        // --- Start game ---
+        startBtn.onclick = () => {
+            const p1 = $('#p1').value.trim();
+            const p2 = $('#p2').value.trim();
+            const p3 = $('#p3').value.trim();
+            if (!p1 || !p2 || !p3) { setupError.textContent = 'თამაშის დასაწყებად აუცილებელია მოთამაშეების სახელების შევსება'; return; }
+            const uniq = new Set([p1.toLowerCase(), p2.toLowerCase(), p3.toLowerCase()]);
+            if (uniq.size !== 3) { setupError.textContent = 'სახელები უნდა განხავედებოდეს.'; return; }
+            setupError.textContent = '';
+            players = [p1, p2, p3];
+            startGame();
+        };
+
+        function goHome() {
+            // reset to setup
+            setupCard.style.display = '';
+            gameArea.style.display = 'none';
+            subtitle.textContent = 'თამაშის დასაწყებად ჩაწერეთ სახელები';
+            backBtn.style.display = 'none';
+        }
+
+        function startGame() {
+            // init state
+            totals = [0, 0, 0]; currentRound = 0; multiCounts = {}; multiChosen = {}; whoIndex = 0;
+            history = [];
+            updateUndoEnabled();
+            
+            // UI switch
+            setupCard.style.display = 'none';
+            gameArea.style.display = '';
+            backBtn.style.display = 'inline-block';
+            renderInGameFooterActions();
+            
+            // header
+            subtitle.textContent = '';
+            
+            // names headers
+            thP1.textContent = players[0];
+            thP2.textContent = players[1];
+            thP3.textContent = players[2];
+            
+            // build table body
+            tbody.innerHTML = '';
+            ROUNDS.forEach((rd, idx) => {
+                const tr = el('tr');
+                tr.appendChild(el('th', { textContent: String(idx + 1) }));
+                for (let i = 0; i < 3; i++) tr.appendChild(el('td', { id: `cell-${idx}-${i}` }));
+                tr.appendChild(el('td', { textContent: `${rd.title} ${rd.icon}` }));
+                tbody.appendChild(tr);
+            });
+            updateTotals();
+            startRound();
+        }
+
+        function updateTotals() {
+            tot1.textContent = totals[0];
+            tot2.textContent = totals[1];
+            tot3.textContent = totals[2];
+        }
+
+        function setCell(r, c, text) {
+            const cell = document.getElementById(`cell-${r}-${c}`);
+            if (cell) cell.textContent = text;
+        }
+
+        function getRoundInstruction(rd) {
+            if (!rd) return '';
+            if (rd.type === 'king') {
+                return `მოთამაშემ უნდა ეცადოს, რომ არ წაიყვანოს ${rd.title} ${rd.icon} (${rd.penalty} ქულა).`;
+            }
+            const per = rd.penaltyPer || 0;
+            const perTxt = per >= 0 ? `+${per}` : `${per}`;
+            const totalTxt = typeof rd.total === 'number' ? ` • Total this round: ${rd.total}` : '';
+            return `${rd.title}: ${perTxt} per card${totalTxt}.`;
+        }
+
+        // --- Block summary helper ---
+        function getBlockSummary(idx) {
+            // NEW: Check if we are in the final 9 "Plus" rounds (indices 18 to 26)
+            if (idx >= 18 && idx <= 26) {
+                const first = ROUNDS[18];
+                const per = first.penaltyPer || 0;
+                const perTxt = per >= 0 ? `+${per}` : `${per}`;
+                const totalTxt = typeof first.total === 'number' ? ` • სულ: ${first.total}` : '';
+                return `რაუნდები 19–27: ${first.title} — თითოეულზე ${perTxt}${totalTxt}.`;
+            }
+
+            // STANDARD LOGIC: For the first 18 rounds, group them 3 by 3
+            const start = Math.floor(idx / 3) * 3; // 0,3,6,...
+            const end = start + 2;
+            const first = ROUNDS[start];
+            
+            if (!first) return '';
+            
+            if (first.type === 'king') {
+                return `რაუნდები ${start + 1}–${end + 1}: 
+                King — ვინც წაიყვანს King ${HEART}, −40 ქულა.`;
+            }
+            
+            const per = first.penaltyPer || 0;
+            const perTxt = per >= 0 ? `+${per}` : `${per}`;
+            const totalTxt = typeof first.total === 'number' ? ` • სულ: ${first.total}` : '';
+            return `რაუნდები ${start + 1}–${end + 1}: ${first.title} — თითოეულზე ${perTxt}${totalTxt}.`;
+        }
+
+        function updateRoundInstruction(){
+          const rd = ROUNDS[currentRound];
+          if (!rd){ instruction.textContent = ''; return; }
+          const blockLine = getBlockSummary(currentRound);
+          if (rd.type === 'multi'){
+            const taken = Object.values(multiCounts).reduce((a,b)=>a+b,0);
+            const total = rd.total ?? 0;
+            const remaining = Math.max(0, total - taken);
+            const per = rd.penaltyPer || 0;
+            const perTxt = per >= 0 ? `+${per}` : `${per}`;
+            instruction.innerHTML = `${blockLine}<br>${rd.title}: თითოეულზე ${perTxt} • დარჩა ${remaining}/${total}`;
+        } else {
+            instruction.innerHTML = `${blockLine}<hr style="border: none; border-top: 1px solid #e5e7eb; margin: 12px 0;">${getRoundInstruction(rd)}`;
+          }
+        }
+
+        function startRound() {
+            // Highlight current row
+            Array.from(tbody.children).forEach((tr, idx) => {
+                if (idx === currentRound) {
+                    tr.classList.add('current-row');
+                } else {
+                    tr.classList.remove('current-row');
+                }
+            });
+
+            if (currentRound >= ROUNDS.length) {
+                subtitle.textContent = 'Finished';
+                // compute winner(s) by highest total
+                const maxScore = Math.max(...totals);
+                const winners = players.filter((_, i) => totals[i] === maxScore);
+                let winnerText;
+                if (winners.length > 1) {
+                    winnerText = "🏆 გამარჯვებულები: " + winners.join(', ');
+                } else {
+                    winnerText = "🥇 გამარჯვებული: " + winners[0];
+                }
+                question.textContent = winnerText;
+
+                buttonsRow.innerHTML = '';
+                status.textContent = `ქულები — ${players[0]}: ${totals[0]}, ${players[1]}: ${totals[1]}, ${players[2]}: ${totals[2]}`;
+
+                // Hide instruction card when finished
+                const instructionCard = instruction ? instruction.closest('.card') : null;
+                if (instructionCard) instructionCard.style.display = 'none';
+
+                // Clear any actions next to totals (footer)
+                const footerHost = document.getElementById('footerActions');
+                if (footerHost) footerHost.innerHTML = '';
+
+                // Render Start Again / Home under the totals
+                renderFinishActionsInCard();
+                return;
+            }
+            
+            const rd = ROUNDS[currentRound];
+            subtitle.textContent = `რაუნდი ${currentRound + 1} • ${rd.title} ${rd.icon}`;
+            status.textContent = '';
+            buttonsRow.innerHTML = '';
+            renderInGameFooterActions();
+            
+            // Show instruction card during gameplay
+            const instructionCard = instruction ? instruction.closest('.card') : null;
+            if (instructionCard) instructionCard.style.display = '';
+            
+            // Clear finish actions when not finished
+            if (finishActions) finishActions.innerHTML = '';
+            updateRoundInstruction();
+            
+            if (rd.type === 'king') {
+                question.innerHTML = `რაუნდი ${currentRound + 1}<br>ვინ წაიღო ${rd.title} ${rd.icon}?`;
+                players.forEach((p, idx) => {
+                    const b = el('button', { className: 'btn small', textContent: p });
+                    b.onclick = () => assignKingPenalty(idx);
+                    buttonsRow.appendChild(b);
+                });
+            } else { // multi
+                if (!restoring) {
+                    multiCounts = {};
+                    multiChosen = {};
+                    players.forEach(p => { multiCounts[p] = 0; multiChosen[p] = false; });
+                    whoIndex = 0;
+                }
+                askNextMulti();
+                restoring = false; // Set to false AFTER askNextMulti runs to ensure the state is clear
+            }
+        }
+
+        function assignKingPenalty(playerIdx) {
+            pushSnapshot();
+            const rd = ROUNDS[currentRound];
+            totals[playerIdx] += rd.penalty; setCell(currentRound, playerIdx, String(rd.penalty));
+            // Fill 0 for other players in King rounds
+            for (let i = 0; i < players.length; i++) {
+                if (i !== playerIdx) {
+                    setCell(currentRound, i, '0');
+                }
+            }
+            updateTotals();
+            status.textContent = `${players[playerIdx]} takes the ${rd.title} ${rd.icon} (${rd.penalty}).`;
+            currentRound++; startRound();
+        }
+
+        function askNextMulti() {
+            const rd = ROUNDS[currentRound];
+            const totalRequired = rd.total ?? 4;
+            const player = players[whoIndex];
+            const takenSoFar = Object.values(multiCounts).reduce((a, b) => a + b, 0);
+            const remaining = totalRequired - takenSoFar;
+            
+            if (remaining <= 0) { finalizeMulti(); return; }
+            
+            // Auto-assign logic ONLY fires if we are not currently restoring an undo
+            if (whoIndex === players.length - 1 && !restoring) {
+                pushSnapshot();
+                multiCounts[player] = remaining;
+                multiChosen[player] = true;
+                updateProvisionalMultiCells();  
+                updateRoundInstruction();
+                status.textContent = `${player} auto-assigned ${remaining}.`;
+                finalizeMulti(); return;
+            }
+
+            question.innerHTML = `რაუნდი ${currentRound + 1}<br>${rd.title} — რამდენი წაიყვანა ${player}?`;
+            updateRoundInstruction();
+            buttonsRow.innerHTML = '';
+            
+            const cap = Math.min(10, remaining); 
+            
+            if (whoIndex === players.length - 1) {
+                // If restoring on the last player, give them a single button to force confirmation
+                const b = el('button', { className: 'btn small', textContent: String(remaining) });
+                b.onclick = () => setMultiCount(player, remaining);
+                buttonsRow.appendChild(b);
+            } else {
+                for (let n = 0; n <= cap; n++) {
+                    const b = el('button', { className: 'btn small', textContent: String(n) });
+                    b.onclick = () => setMultiCount(player, n);
+                    buttonsRow.appendChild(b);
+                }
+            }
+            
+            updateProvisionalMultiCells();
+            updateRoundInstruction();
+        }
+
+        function setMultiCount(player, count) {
+            pushSnapshot();
+            const rd = ROUNDS[currentRound];
+            const totalRequired = rd.total ?? 4;
+            const takenSoFar = Object.values(multiCounts).reduce((a, b) => a + b, 0);
+            const remaining = totalRequired - takenSoFar;
+            const safe = Math.max(0, Math.min(count, remaining));
+            multiCounts[player] = safe;
+            multiChosen[player] = true;
+            updateRoundInstruction();
+            updateProvisionalMultiCells();
+            
+            if (safe === totalRequired) {
+                // this player took all
+                players.forEach(p => { if (p !== player) multiCounts[p] = 0; });
+                finalizeMulti(); return;
+            }
+            
+            const newTotal = Object.values(multiCounts).reduce((a, b) => a + b, 0);
+            if (newTotal >= totalRequired) { finalizeMulti(); return; }
+            
+            whoIndex++; askNextMulti();
+        }
+
+        function finalizeMulti() {
+            const rd = ROUNDS[currentRound];
+            const totalRequired = rd.total ?? 4;
+            const sum = Object.values(multiCounts).reduce((a, b) => a + b, 0);
+            if (sum < totalRequired) {
+                const lastIdx = Math.min(whoIndex, players.length - 1);
+                multiCounts[players[lastIdx]] += (totalRequired - sum);
+            }
+            // apply deltas & table cells
+            players.forEach((p, idx) => {
+                const count = multiCounts[p] || 0;
+                const delta = (rd.penaltyPer || 0) * count;
+                totals[idx] += delta; setCell(currentRound, idx, String(delta));
+            });
+            updateTotals();
+            const summary = players.map(p => `${p}:${multiCounts[p] || 0}`).join(', ');
+            status.textContent = `${rd.title} taken — ${summary} (each ${rd.penaltyPer || 0}).`;
+            multiChosen = {};
+            currentRound++; startRound();
+        }
+
+        function updateProvisionalMultiCells() {
+            const rd = ROUNDS[currentRound];
+            if (!rd || rd.type !== 'multi') return;
+            players.forEach((p, idx) => {
+                const chosen = !!multiChosen[p];
+                const count = multiCounts[p] || 0;
+                if (chosen) {
+                    const delta = (rd.penaltyPer || 0) * count; // show even if 0
+                    setCell(currentRound, idx, String(delta));
+                } else {
+                    setCell(currentRound, idx, '');
+                }
+            });
+        }
+
+        function updateUndoEnabled() {
+            const btn = document.getElementById('undoBtn');
+            if (btn) {
+                btn.disabled = history.length === 0;
+                btn.onclick = restoreSnapshot;
+            }
+        }
+
+        function renderInGameFooterActions() {
+            const host = document.getElementById('footerActions');
+            if (!host) return;
+            host.innerHTML = '<button id="undoBtn" class="btn secondary">ჩასწორება</button>';
+            updateUndoEnabled();
+        }
+
+        function renderFinishFooterActions() {
+            const host = document.getElementById('footerActions');
+            if (!host) return;
+            host.innerHTML = `
+                <button id="startAgainBtn" class="btn secondary">თავიდან დაწყება</button>
+                <button id="homeBtn" class="btn">მთავარი</button>
+            `;
+            const startAgainBtn = document.getElementById('startAgainBtn');
+            const homeBtn = document.getElementById('homeBtn');
+            if (startAgainBtn) startAgainBtn.onclick = startGame;
+            if (homeBtn) homeBtn.onclick = goHome;
+        }
+
+        function pushSnapshot() {
+            // Capture current state before a change
+            const rowCells = [0, 1, 2].map(i =>
+                (document.getElementById(`cell-${currentRound}-${i}`)?.textContent) || ""
+            );
+            history.push({
+                currentRound,
+                totals: totals.slice(),
+                multiCounts: { ...multiCounts },
+                multiChosen: { ...multiChosen },
+                whoIndex,
+                rowCells
+            });
+            updateUndoEnabled();
+        }
+
+        function restoreSnapshot() {
+            if (!history.length) return;
+            const snap = history.pop();
+            currentRound = snap.currentRound;
+            totals = snap.totals.slice();
+            multiCounts = { ...snap.multiCounts };
+            multiChosen = { ...snap.multiChosen };
+            whoIndex = snap.whoIndex;
+
+            // Restore current row cells & totals, then rebuild the round UI
+            for (let i = 0; i < 3; i++) setCell(currentRound, i, snap.rowCells[i]);
+            updateTotals();
+            restoring = true; // prevent multi init
+            startRound();
+            updateUndoEnabled();
+        }
+
+        // init
+        subtitle.textContent = 'კინგის აპლიკაცია - ©JANO v1.1';
+        updateUndoEnabled();
+    </script>
+</body>
+
+</html>
