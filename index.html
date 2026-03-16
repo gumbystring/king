@@ -103,7 +103,7 @@
             border: none;
             font-size: 24px;
             cursor: pointer;
-            margin-left: auto; /* Pushes it to the far right */
+            margin-left: auto;
             padding: 4px;
         }
 
@@ -303,7 +303,11 @@
                             placeholder="სახელი..." autocomplete="off" /></div>
                 </div>
                 <div id="setupError" class="muted" style="color:var(--danger)"></div>
-                <button id="startBtn" class="btn">თამაშის დაწყება</button>
+                
+                <div class="row" style="margin-top: 8px;">
+                    <button id="startBtn" class="btn" style="flex: 1;">თამაშის დაწყება</button>
+                    <button id="historyBtn" class="btn secondary">ისტორია</button>
+                </div>
             </div>
         </div>
 
@@ -359,12 +363,23 @@
         </div>
     </div>
 
+    <div id="historyModal" class="modal">
+        <div class="card" style="max-width:420px; width: 100%; max-height: 80vh; display: flex; flex-direction: column;">
+            <div style="font-weight:800; font-size:18px; margin-bottom:12px;">📜 თამაშების ისტორია</div>
+            <div id="historyList" style="overflow-y: auto; flex: 1; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px;">
+                </div>
+            <div class="row" style="justify-content:flex-end; gap:8px">
+                <button id="clearHistoryBtn" class="btn" style="background: var(--danger);">გასუფთავება</button>
+                <button id="closeHistoryBtn" class="btn secondary">დახურვა</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // --- Dark Mode Logic ---
         const themeToggleBtn = document.getElementById('themeToggle');
         const htmlEl = document.documentElement;
 
-        // Check if user has a saved preference, OR if their phone/computer is set to dark mode
         const savedTheme = localStorage.getItem('theme');
         const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
@@ -373,7 +388,6 @@
             themeToggleBtn.textContent = '☀️';
         }
 
-        // Toggle functionality
         themeToggleBtn.onclick = () => {
             const currentTheme = htmlEl.getAttribute('data-theme');
             if (currentTheme === 'dark') {
@@ -388,7 +402,7 @@
         };
 
 
-        // --- Game definition (matches your Kivy app) ---
+        // --- Game definition ---
         const HEART = '♥️';
         const QUEEN = '👑';
         const JACK = '🃏';
@@ -452,30 +466,81 @@
         const instruction = $('#instruction');
         const status = $('#status');
         const finishActions = $('#finishActions');
-        function renderFinishActionsInCard() {
-            if (!finishActions) return;
-            finishActions.innerHTML = `
-              <button id="startAgainBtn" class="btn secondary">თავიდან დაწყება</button>
-              <button id="homeBtn" class="btn">მთავარი</button>
-            `;
-            const startAgainBtn = document.getElementById('startAgainBtn');
-            const homeBtn = document.getElementById('homeBtn');
-            if (startAgainBtn) startAgainBtn.onclick = startGame;
-            if (homeBtn) homeBtn.onclick = goHome;
-        }
         const startBtn = $('#startBtn');
         const setupError = $('#setupError');
         const modal = $('#modal');
         const noQuit = $('#noQuit');
         const yesQuit = $('#yesQuit');
+        
+        // History Elements
+        const historyModal = $('#historyModal');
+        const historyBtn = $('#historyBtn');
+        const closeHistoryBtn = $('#closeHistoryBtn');
+        const clearHistoryBtn = $('#clearHistoryBtn');
+        const historyList = $('#historyList');
 
-        // Hide back button on main (setup) screen
         backBtn.style.display = 'none';
 
-        // --- Modal logic ---
+        // --- Modals logic ---
         backBtn.onclick = () => modal.classList.add('open');
         noQuit.onclick = () => modal.classList.remove('open');
         yesQuit.onclick = () => { modal.classList.remove('open'); goHome(); };
+
+        if (historyBtn) {
+            historyBtn.onclick = () => {
+                loadHistoryUI();
+                historyModal.classList.add('open');
+            };
+        }
+        if (closeHistoryBtn) {
+            closeHistoryBtn.onclick = () => historyModal.classList.remove('open');
+        }
+        if (clearHistoryBtn) {
+            clearHistoryBtn.onclick = () => {
+                if(confirm("ნამდვილად გსურთ ისტორიის წაშლა?")) {
+                    localStorage.removeItem('kingGameHistory');
+                    loadHistoryUI();
+                }
+            };
+        }
+
+        // --- History Functions ---
+        function saveGameResult() {
+            const existingHistory = JSON.parse(localStorage.getItem('kingGameHistory') || '[]');
+            const gameRecord = {
+                date: new Date().toLocaleString('ka-GE'),
+                players: [...players],
+                scores: [...totals]
+            };
+            existingHistory.unshift(gameRecord);
+            localStorage.setItem('kingGameHistory', JSON.stringify(existingHistory));
+        }
+
+        function loadHistoryUI() {
+            const historyData = JSON.parse(localStorage.getItem('kingGameHistory') || '[]');
+            historyList.innerHTML = ''; 
+            
+            if (historyData.length === 0) {
+                historyList.innerHTML = '<div class="muted" style="text-align:center; padding: 20px;">ისტორია ცარიელია</div>';
+                return;
+            }
+
+            historyData.forEach(game => {
+                const item = el('div', { className: 'card', style: 'padding: 12px; background: var(--bg); box-shadow: none; border: 1px solid var(--border);' });
+                let scoresHtml = '';
+                for(let i = 0; i < 3; i++) {
+                    scoresHtml += `<div class="row" style="justify-content: space-between;">
+                        <span>${game.players[i]}</span>
+                        <strong>${game.scores[i]}</strong>
+                    </div>`;
+                }
+                item.innerHTML = `
+                    <div class="muted" style="font-size: 12px; margin-bottom: 8px;">🕒 ${game.date}</div>
+                    <div class="col" style="gap: 4px;">${scoresHtml}</div>
+                `;
+                historyList.appendChild(item);
+            });
+        }
 
         // --- Start game ---
         startBtn.onclick = () => {
@@ -490,8 +555,19 @@
             startGame();
         };
 
+        function renderFinishActionsInCard() {
+            if (!finishActions) return;
+            finishActions.innerHTML = `
+              <button id="startAgainBtn" class="btn secondary">თავიდან დაწყება</button>
+              <button id="homeBtn" class="btn">მთავარი</button>
+            `;
+            const startAgainBtn = document.getElementById('startAgainBtn');
+            const homeBtn = document.getElementById('homeBtn');
+            if (startAgainBtn) startAgainBtn.onclick = startGame;
+            if (homeBtn) homeBtn.onclick = goHome;
+        }
+
         function goHome() {
-            // reset to setup
             setupCard.style.display = '';
             gameArea.style.display = 'none';
             subtitle.textContent = 'თამაშის დასაწყებად ჩაწერეთ სახელები';
@@ -499,26 +575,20 @@
         }
 
         function startGame() {
-            // init state
             totals = [0, 0, 0]; currentRound = 0; multiCounts = {}; multiChosen = {}; whoIndex = 0;
             history = [];
             updateUndoEnabled();
 
-            // UI switch
             setupCard.style.display = 'none';
             gameArea.style.display = '';
             backBtn.style.display = 'inline-block';
             renderInGameFooterActions();
 
-            // header
             subtitle.textContent = '';
-
-            // names headers
             thP1.textContent = players[0];
             thP2.textContent = players[1];
             thP3.textContent = players[2];
 
-            // build table body
             tbody.innerHTML = '';
             ROUNDS.forEach((rd, idx) => {
                 const tr = el('tr');
@@ -553,7 +623,6 @@
             return `${rd.title}: ${perTxt} per card${totalTxt}.`;
         }
 
-        // --- Block summary helper ---
         function getBlockSummary(idx) {
             if (idx >= 18 && idx <= 26) {
                 const first = ROUNDS[18];
@@ -562,8 +631,7 @@
                 const totalTxt = typeof first.total === 'number' ? ` • სულ: ${first.total}` : '';
                 return `რაუნდები 19–27: ${first.title} — თითოეულზე ${perTxt}${totalTxt}.`;
             }
-
-            const start = Math.floor(idx / 3) * 3; // 0,3,6,...
+            const start = Math.floor(idx / 3) * 3; 
             const end = start + 2;
             const first = ROUNDS[start];
 
@@ -573,7 +641,6 @@
                 return `რაუნდები ${start + 1}–${end + 1}: 
                 King — ვინც წაიყვანს King ${HEART}, −40 ქულა.`;
             }
-
             const per = first.penaltyPer || 0;
             const perTxt = per >= 0 ? `+${per}` : `${per}`;
             const totalTxt = typeof first.total === 'number' ? ` • სულ: ${first.total}` : '';
@@ -597,10 +664,11 @@
         }
 
         function startRound() {
-            // Highlight current row
+            // Highlight current row and auto-scroll
             Array.from(tbody.children).forEach((tr, idx) => {
                 if (idx === currentRound) {
                     tr.classList.add('current-row');
+                    tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 } else {
                     tr.classList.remove('current-row');
                 }
@@ -608,7 +676,9 @@
 
             if (currentRound >= ROUNDS.length) {
                 subtitle.textContent = 'Finished';
-                // compute winner(s) by highest total
+                
+                saveGameResult(); // Save to local storage
+
                 const maxScore = Math.max(...totals);
                 const winners = players.filter((_, i) => totals[i] === maxScore);
                 let winnerText;
@@ -622,15 +692,12 @@
                 buttonsRow.innerHTML = '';
                 status.textContent = `ქულები — ${players[0]}: ${totals[0]}, ${players[1]}: ${totals[1]}, ${players[2]}: ${totals[2]}`;
 
-                // Hide instruction card when finished
                 const instructionCard = instruction ? instruction.closest('.card') : null;
                 if (instructionCard) instructionCard.style.display = 'none';
 
-                // Clear any actions next to totals (footer)
                 const footerHost = document.getElementById('footerActions');
                 if (footerHost) footerHost.innerHTML = '';
 
-                // Render Start Again / Home under the totals
                 renderFinishActionsInCard();
                 return;
             }
@@ -641,11 +708,9 @@
             buttonsRow.innerHTML = '';
             renderInGameFooterActions();
 
-            // Show instruction card during gameplay
             const instructionCard = instruction ? instruction.closest('.card') : null;
             if (instructionCard) instructionCard.style.display = '';
 
-            // Clear finish actions when not finished
             if (finishActions) finishActions.innerHTML = '';
             updateRoundInstruction();
 
@@ -656,7 +721,7 @@
                     b.onclick = () => assignKingPenalty(idx);
                     buttonsRow.appendChild(b);
                 });
-            } else { // multi
+            } else { 
                 if (!restoring) {
                     multiCounts = {};
                     multiChosen = {};
@@ -664,7 +729,7 @@
                     whoIndex = 0;
                 }
                 askNextMulti();
-                restoring = false; // Set to false AFTER askNextMulti runs to ensure the state is clear
+                restoring = false; 
             }
         }
 
@@ -672,7 +737,6 @@
             pushSnapshot();
             const rd = ROUNDS[currentRound];
             totals[playerIdx] += rd.penalty; setCell(currentRound, playerIdx, String(rd.penalty));
-            // Fill 0 for other players in King rounds
             for (let i = 0; i < players.length; i++) {
                 if (i !== playerIdx) {
                     setCell(currentRound, i, '0');
@@ -692,7 +756,6 @@
 
             if (remaining <= 0) { finalizeMulti(); return; }
 
-            // Auto-assign logic ONLY fires if we are not currently restoring an undo
             if (whoIndex === players.length - 1 && !restoring) {
                 pushSnapshot();
                 multiCounts[player] = remaining;
@@ -710,7 +773,6 @@
             const cap = Math.min(10, remaining);
 
             if (whoIndex === players.length - 1) {
-                // If restoring on the last player, give them a single button to force confirmation
                 const b = el('button', { className: 'btn small', textContent: String(remaining) });
                 b.onclick = () => setMultiCount(player, remaining);
                 buttonsRow.appendChild(b);
@@ -739,7 +801,6 @@
             updateProvisionalMultiCells();
 
             if (safe === totalRequired) {
-                // this player took all
                 players.forEach(p => { if (p !== player) multiCounts[p] = 0; });
                 finalizeMulti(); return;
             }
@@ -758,7 +819,6 @@
                 const lastIdx = Math.min(whoIndex, players.length - 1);
                 multiCounts[players[lastIdx]] += (totalRequired - sum);
             }
-            // apply deltas & table cells
             players.forEach((p, idx) => {
                 const count = multiCounts[p] || 0;
                 const delta = (rd.penaltyPer || 0) * count;
@@ -778,7 +838,7 @@
                 const chosen = !!multiChosen[p];
                 const count = multiCounts[p] || 0;
                 if (chosen) {
-                    const delta = (rd.penaltyPer || 0) * count; // show even if 0
+                    const delta = (rd.penaltyPer || 0) * count;
                     setCell(currentRound, idx, String(delta));
                 } else {
                     setCell(currentRound, idx, '');
@@ -801,21 +861,7 @@
             updateUndoEnabled();
         }
 
-        function renderFinishFooterActions() {
-            const host = document.getElementById('footerActions');
-            if (!host) return;
-            host.innerHTML = `
-                <button id="startAgainBtn" class="btn secondary">თავიდან დაწყება</button>
-                <button id="homeBtn" class="btn">მთავარი</button>
-            `;
-            const startAgainBtn = document.getElementById('startAgainBtn');
-            const homeBtn = document.getElementById('homeBtn');
-            if (startAgainBtn) startAgainBtn.onclick = startGame;
-            if (homeBtn) homeBtn.onclick = goHome;
-        }
-
         function pushSnapshot() {
-            // Capture current state before a change
             const rowCells = [0, 1, 2].map(i =>
                 (document.getElementById(`cell-${currentRound}-${i}`)?.textContent) || ""
             );
@@ -839,23 +885,21 @@
             multiChosen = { ...snap.multiChosen };
             whoIndex = snap.whoIndex;
 
-            // Restore current row cells & totals, then rebuild the round UI
             for (let i = 0; i < 3; i++) setCell(currentRound, i, snap.rowCells[i]);
             updateTotals();
-            restoring = true; // prevent multi init
+            restoring = true; 
             startRound();
             updateUndoEnabled();
         }
 
-        // init
-        subtitle.textContent = 'კინგის აპლიკაცია - ©JANO v1.1';
+        subtitle.textContent = 'კინგის აპლიკაცია - ©JANO v1.3';
         updateUndoEnabled();
 
-        // Device Check for Install Prompts
+        // --- Device Check for Install Prompts ---
         function checkDeviceAndShowPrompt() {
             const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
             if (isStandalone) {
-                return; // App is already installed, do nothing
+                return;
             }
 
             const userAgent = window.navigator.userAgent.toLowerCase();
@@ -869,7 +913,6 @@
             }
         }
 
-        // Wait for HTML to load before running the check
         document.addEventListener('DOMContentLoaded', checkDeviceAndShowPrompt);
     </script>
 
