@@ -9,6 +9,7 @@
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="apple-touch-icon" href="favicon.png">
     <style>
+        /* Light Theme (Default) */
         :root {
             --primary: #58CC02;
             --bg: #FAFDFF;
@@ -16,6 +17,24 @@
             --text: #1f1f1f;
             --muted: #6b7280;
             --danger: #e11d48;
+            --secondary-bg: #e5e7eb;
+            --secondary-text: #111111;
+            --border: #e5e7eb;
+            --modal-bg: rgba(0, 0, 0, 0.35);
+            --shadow: rgba(0, 0, 0, 0.06);
+        }
+
+        /* Dark Theme overrides */
+        [data-theme="dark"] {
+            --bg: #121212;
+            --card: #1e1e1e;
+            --text: #e0e0e0;
+            --muted: #9ca3af;
+            --secondary-bg: #374151;
+            --secondary-text: #f3f4f6;
+            --border: #374151;
+            --modal-bg: rgba(0, 0, 0, 0.75);
+            --shadow: rgba(0, 0, 0, 0.3);
         }
 
         * {
@@ -26,7 +45,8 @@
             margin: 0;
             font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
             background: var(--bg);
-            color: var(--text)
+            color: var(--text);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .app {
@@ -41,8 +61,9 @@
         .card {
             background: var(--card);
             border-radius: 16px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, .06), 0 1px 2px rgba(0, 0, 0, .04);
-            padding: 16px
+            box-shadow: 0 1px 3px var(--shadow), 0 1px 2px var(--shadow);
+            padding: 16px;
+            transition: background-color 0.3s ease;
         }
 
         .header {
@@ -58,11 +79,13 @@
         }
 
         .back {
-            background: #e5e7eb;
+            background: var(--secondary-bg);
+            color: var(--secondary-text);
             border: none;
             border-radius: 10px;
             padding: 10px 14px;
-            cursor: pointer
+            cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
         .title {
@@ -72,6 +95,16 @@
 
         .subtitle {
             color: var(--muted)
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            margin-left: auto; /* Pushes it to the far right */
+            padding: 4px;
         }
 
         .stripe {
@@ -103,8 +136,8 @@
         }
 
         .btn.secondary {
-            background: #e5e7eb;
-            color: #111
+            background: var(--secondary-bg);
+            color: var(--secondary-text);
         }
 
         .btn.small {
@@ -119,8 +152,11 @@
 
         .input {
             padding: 10px 12px;
-            border: 1px solid #e5e7eb;
-            border-radius: 10px
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--card);
+            color: var(--text);
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
         }
 
         .muted {
@@ -147,14 +183,16 @@
             z-index: 2;
             padding: 8px 6px;
             color: var(--muted);
-            text-align: left
+            text-align: left;
+            transition: background-color 0.3s ease;
         }
 
         tbody td,
         tbody th {
-            background: #fff;
+            background: var(--card);
             padding: 12px 8px;
-            text-align: center
+            text-align: center;
+            transition: background-color 0.3s ease;
         }
 
         tbody th {
@@ -163,13 +201,14 @@
         }
 
         tfoot td {
-            background: #fff;
+            background: var(--card);
             padding: 12px 8px;
             font-weight: 800;
             font-size: 16px;
             position: sticky;
             bottom: 0;
-            z-index: 1
+            z-index: 1;
+            transition: background-color 0.3s ease;
         }
 
         .names-pill {
@@ -179,7 +218,7 @@
         }
 
         .pill {
-            background: #fff;
+            background: var(--card);
             border-radius: 999px;
             padding: 8px 12px;
             font-weight: 700
@@ -189,13 +228,13 @@
         .modal {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, .35);
+            background: var(--modal-bg);
             display: none;
             align-items: center;
             justify-content: center;
             padding: 16px;
-            z-index: 999
-                /* <--- ADD THIS LINE */
+            z-index: 999;
+            transition: background-color 0.3s ease;
         }
 
         .modal.open {
@@ -218,7 +257,6 @@
         .current-row td:last-child {
             font-weight: 800;
         }
-
 
         /* Small screens */
         @media (max-width:640px) {
@@ -246,6 +284,7 @@
                     <div class="title">KING</div>
                     <div id="subtitle" class="subtitle"></div>
                 </div>
+                <button id="themeToggle" class="theme-toggle">🌙</button>
             </div>
             <div class="stripe"></div>
         </div>
@@ -321,6 +360,34 @@
     </div>
 
     <script>
+        // --- Dark Mode Logic ---
+        const themeToggleBtn = document.getElementById('themeToggle');
+        const htmlEl = document.documentElement;
+
+        // Check if user has a saved preference, OR if their phone/computer is set to dark mode
+        const savedTheme = localStorage.getItem('theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+            htmlEl.setAttribute('data-theme', 'dark');
+            themeToggleBtn.textContent = '☀️';
+        }
+
+        // Toggle functionality
+        themeToggleBtn.onclick = () => {
+            const currentTheme = htmlEl.getAttribute('data-theme');
+            if (currentTheme === 'dark') {
+                htmlEl.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+                themeToggleBtn.textContent = '🌙';
+            } else {
+                htmlEl.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+                themeToggleBtn.textContent = '☀️';
+            }
+        };
+
+
         // --- Game definition (matches your Kivy app) ---
         const HEART = '♥️';
         const QUEEN = '👑';
@@ -488,7 +555,6 @@
 
         // --- Block summary helper ---
         function getBlockSummary(idx) {
-            // NEW: Check if we are in the final 9 "Plus" rounds (indices 18 to 26)
             if (idx >= 18 && idx <= 26) {
                 const first = ROUNDS[18];
                 const per = first.penaltyPer || 0;
@@ -497,7 +563,6 @@
                 return `რაუნდები 19–27: ${first.title} — თითოეულზე ${perTxt}${totalTxt}.`;
             }
 
-            // STANDARD LOGIC: For the first 18 rounds, group them 3 by 3
             const start = Math.floor(idx / 3) * 3; // 0,3,6,...
             const end = start + 2;
             const first = ROUNDS[start];
@@ -527,7 +592,7 @@
                 const perTxt = per >= 0 ? `+${per}` : `${per}`;
                 instruction.innerHTML = `${blockLine}<br>${rd.title}: თითოეულზე ${perTxt} • დარჩა ${remaining}/${total}`;
             } else {
-                instruction.innerHTML = `${blockLine}<hr style="border: none; border-top: 1px solid #e5e7eb; margin: 12px 0;">${getRoundInstruction(rd)}`;
+                instruction.innerHTML = `${blockLine}<hr style="border: none; border-top: 1px solid var(--border); margin: 12px 0;">${getRoundInstruction(rd)}`;
             }
         }
 
@@ -786,53 +851,40 @@
         subtitle.textContent = 'კინგის აპლიკაცია - ©JANO v1.1';
         updateUndoEnabled();
 
-        // Run this function when the page loads
+        // Device Check for Install Prompts
         function checkDeviceAndShowPrompt() {
-            // 1. Check if the app is ALREADY installed
-            // (We don't want to annoy them if they already have it!)
             const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
             if (isStandalone) {
-                console.log("App is already installed.");
-                return; // Stop running the code
+                return; // App is already installed, do nothing
             }
 
-            // 2. Get the user's device info
             const userAgent = window.navigator.userAgent.toLowerCase();
-
-            // 3. Detect iOS (iPhone, iPad, iPod)
             const isIOS = /iphone|ipad|ipod/.test(userAgent);
-
-            // 4. Detect Android
             const isAndroid = /android/.test(userAgent);
 
-            // 5. Show the correct prompt based on the device
             if (isIOS) {
-                // Show your custom HTML pop-up telling them to tap "Share"
                 document.getElementById('ios-install-popup').style.display = 'block';
             } else if (isAndroid) {
-                // Show your custom Android HTML pop-up or button
                 document.getElementById('android-install-popup').style.display = 'block';
             }
         }
 
-        // Trigger the check
-        checkDeviceAndShowPrompt();
+        // Wait for HTML to load before running the check
+        document.addEventListener('DOMContentLoaded', checkDeviceAndShowPrompt);
     </script>
 
     <div id="ios-install-popup"
-        style="display: none; position: fixed; bottom: 0; width: 100%; background: white; padding: 20px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 1000;">
-        <p><strong>Install our App!</strong></p>
-        <p>Tap the <strong>Share</strong> icon at the bottom of Safari, then scroll down and tap <strong>"Add to Home
-                Screen"</strong>.</p>
-        <button onclick="document.getElementById('ios-install-popup').style.display='none'">Close</button>
+        style="display: none; position: fixed; bottom: 0; width: 100%; background: var(--card); color: var(--text); padding: 20px; box-shadow: 0 -2px 10px var(--shadow); z-index: 1000; border-top-left-radius: 16px; border-top-right-radius: 16px;">
+        <p style="margin-top: 0;"><strong>აპლიკაციის გადმოწერა</strong></p>
+        <p>დააჭირეთ <strong>Share</strong> ღილაკს ეკრანის ბოლოში, შემდეგ აირჩიეთ <strong>"Add to Home Screen"</strong>.</p>
+        <button class="btn secondary small" onclick="document.getElementById('ios-install-popup').style.display='none'">დახურვა</button>
     </div>
 
     <div id="android-install-popup"
-        style="display: none; position: fixed; bottom: 0; width: 100%; background: white; padding: 20px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 1000;">
-        <p><strong>Install our App!</strong></p>
-        <p>Tap the menu icon (three dots) in the top right, then tap <strong>"Install App"</strong> or <strong>"Add to
-                Home Screen"</strong>.</p>
-        <button onclick="document.getElementById('android-install-popup').style.display='none'">Close</button>
+        style="display: none; position: fixed; bottom: 0; width: 100%; background: var(--card); color: var(--text); padding: 20px; box-shadow: 0 -2px 10px var(--shadow); z-index: 1000; border-top-left-radius: 16px; border-top-right-radius: 16px;">
+        <p style="margin-top: 0;"><strong>აპლიკაციის გადმოწერა</strong></p>
+        <p>დააჭირეთ მენიუს ღილაკს (სამი წერტილი) ზედა მარჯვენა კუთხეში, შემდეგ აირჩიეთ <strong>"Install App"</strong> ან <strong>"Add to Home Screen"</strong>.</p>
+        <button class="btn secondary small" onclick="document.getElementById('android-install-popup').style.display='none'">დახურვა</button>
     </div>
 </body>
 
