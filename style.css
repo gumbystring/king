@@ -1,0 +1,297 @@
+/* =========================================
+   1. THEME VARIABLES
+   ========================================= */
+:root {
+    --primary: #58CC02;
+    --bg: #FAFDFF;
+    --card: #ffffff;
+    --text: #1f1f1f;
+    --muted: #6b7280;
+    --danger: #e11d48;
+    --secondary-bg: #e5e7eb;
+    --secondary-text: #111111;
+    --border: #e5e7eb;
+    --modal-bg: rgba(0, 0, 0, 0.35);
+    --shadow: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="dark"] {
+    --bg: #121212;
+    --card: #1e1e1e;
+    --text: #e0e0e0;
+    --muted: #9ca3af;
+    --secondary-bg: #374151;
+    --secondary-text: #f3f4f6;
+    --border: #374151;
+    --modal-bg: rgba(0, 0, 0, 0.75);
+    --shadow: rgba(0, 0, 0, 0.3);
+}
+
+/* =========================================
+   2. GLOBAL RESET & BASE
+   ========================================= */
+* {
+    box-sizing: border-box;
+    touch-action: manipulation; /* Stops double-tap zoom on buttons */
+}
+
+body {
+    margin: 0;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    background: var(--bg);
+    color: var(--text);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.app {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* =========================================
+   3. LAYOUT COMPONENTS
+   ========================================= */
+.card {
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: 0 1px 3px var(--shadow), 0 1px 2px var(--shadow);
+    padding: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.header {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.topbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.title {
+    font-weight: 800;
+    font-size: 28px;
+}
+
+.subtitle {
+    color: var(--muted);
+}
+
+.stripe {
+    height: 6px;
+    background: var(--primary);
+    border-radius: 6px;
+}
+
+/* Question Area Layout Fix */
+#question {
+    width: 100%;
+    margin-bottom: 10px;
+    word-break: break-word;
+}
+
+.row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* =========================================
+   4. BUTTONS & INPUTS
+   ========================================= */
+.btn {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: transform 0.1s ease, background-color 0.2s;
+}
+
+.btn:active {
+    transform: scale(0.95); /* Native tactile feedback */
+}
+
+.btn.secondary {
+    background: var(--secondary-bg);
+    color: var(--secondary-text);
+}
+
+.btn.small {
+    padding: 14px 8px; /* Slightly taller for easier tapping */
+    font-size: 18px;
+    border-radius: 10px;
+}
+
+.theme-toggle {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    margin-left: auto;
+}
+
+.input {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--card);
+    color: var(--text);
+    font-size: 16px !important; /* Prevents Safari Auto-Zoom */
+}
+
+.back {
+   /* Use variables so colors switch with Dark Mode */
+    background-color: var(--secondary-bg);
+    color: var(--secondary-text);
+    
+    border: none;
+    border-radius: 12px;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.1s ease;
+}
+
+.back:active {
+    transform: scale(0.95);
+}
+
+/* Ensure it doesn't look weird on mobile */
+@media (max-width: 640px) {
+    .back {
+        padding: 8px 10px;
+        font-size: 14px;
+    }
+}
+
+/* Responsive Button Grid */
+#buttonsRow {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(65px, 1fr));
+    gap: 10px;
+    width: 100%;
+}
+
+/* =========================================
+   5. TABLE & SCROLLING (SOLID FIX)
+   ========================================= */
+.table-wrap {
+    height: 520px;
+    overflow: auto;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--card); /* Base solid color */
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 6px;
+}
+
+/* Solid Sticky Header */
+thead th {
+    position: sticky;
+    top: 0;
+    background: var(--bg); /* Keeps names visible while numbers slide under */
+    z-index: 30;
+    padding: 12px 8px;
+    color: var(--muted);
+    text-align: left;
+    opacity: 1;
+}
+
+/* Solid Sticky Footer */
+tfoot td {
+    background: var(--card);
+    padding: 14px 8px;
+    font-weight: 800;
+    position: sticky;
+    bottom: 0;
+    z-index: 30;
+    border-top: 2px solid var(--border);
+}
+
+tbody td, tbody th {
+    background: var(--card);
+    padding: 14px 8px;
+    text-align: center;
+}
+
+/* Highlight Current Row */
+.current-row td, .current-row th {
+    background: rgba(88, 204, 2, 0.12) !important;
+}
+
+/* =========================================
+   6. ACTIVE PLAYER & PULSE
+   ========================================= */
+.active-player {
+    background: var(--primary) !important;
+    color: #ffffff !important;
+    border-radius: 8px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(88, 204, 2, 0.5); }
+    70% { box-shadow: 0 0 0 10px rgba(88, 204, 2, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(88, 204, 2, 0); }
+}
+
+/* =========================================
+   7. MODALS & PROMPTS
+   ========================================= */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: var(--modal-bg);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 1000;
+}
+
+.modal.open { display: flex; }
+
+.install-popup {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: var(--card);
+    color: var(--text);
+    padding: 20px;
+    box-shadow: 0 -2px 10px var(--shadow);
+    z-index: 2000;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+}
+
+/* =========================================
+   8. RESPONSIVE
+   ========================================= */
+@media (max-width:640px) {
+    .table-wrap { height: 420px; }
+    .title { font-size: 24px; }
+    table { font-size: 16px; }
+}
