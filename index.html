@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <title>KING — Web</title>
     <link rel="icon" href="favicon.ico" sizes="32x32">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
@@ -194,7 +194,8 @@
             align-items: center;
             justify-content: center;
             padding: 16px;
-            z-index: 999 /* <--- ADD THIS LINE */
+            z-index: 999
+                /* <--- ADD THIS LINE */
         }
 
         .modal.open {
@@ -384,7 +385,7 @@
         const instruction = $('#instruction');
         const status = $('#status');
         const finishActions = $('#finishActions');
-        function renderFinishActionsInCard(){
+        function renderFinishActionsInCard() {
             if (!finishActions) return;
             finishActions.innerHTML = `
               <button id="startAgainBtn" class="btn secondary">თავიდან დაწყება</button>
@@ -400,7 +401,7 @@
         const modal = $('#modal');
         const noQuit = $('#noQuit');
         const yesQuit = $('#yesQuit');
-        
+
         // Hide back button on main (setup) screen
         backBtn.style.display = 'none';
 
@@ -435,21 +436,21 @@
             totals = [0, 0, 0]; currentRound = 0; multiCounts = {}; multiChosen = {}; whoIndex = 0;
             history = [];
             updateUndoEnabled();
-            
+
             // UI switch
             setupCard.style.display = 'none';
             gameArea.style.display = '';
             backBtn.style.display = 'inline-block';
             renderInGameFooterActions();
-            
+
             // header
             subtitle.textContent = '';
-            
+
             // names headers
             thP1.textContent = players[0];
             thP2.textContent = players[1];
             thP3.textContent = players[2];
-            
+
             // build table body
             tbody.innerHTML = '';
             ROUNDS.forEach((rd, idx) => {
@@ -500,34 +501,34 @@
             const start = Math.floor(idx / 3) * 3; // 0,3,6,...
             const end = start + 2;
             const first = ROUNDS[start];
-            
+
             if (!first) return '';
-            
+
             if (first.type === 'king') {
                 return `რაუნდები ${start + 1}–${end + 1}: 
                 King — ვინც წაიყვანს King ${HEART}, −40 ქულა.`;
             }
-            
+
             const per = first.penaltyPer || 0;
             const perTxt = per >= 0 ? `+${per}` : `${per}`;
             const totalTxt = typeof first.total === 'number' ? ` • სულ: ${first.total}` : '';
             return `რაუნდები ${start + 1}–${end + 1}: ${first.title} — თითოეულზე ${perTxt}${totalTxt}.`;
         }
 
-        function updateRoundInstruction(){
-          const rd = ROUNDS[currentRound];
-          if (!rd){ instruction.textContent = ''; return; }
-          const blockLine = getBlockSummary(currentRound);
-          if (rd.type === 'multi'){
-            const taken = Object.values(multiCounts).reduce((a,b)=>a+b,0);
-            const total = rd.total ?? 0;
-            const remaining = Math.max(0, total - taken);
-            const per = rd.penaltyPer || 0;
-            const perTxt = per >= 0 ? `+${per}` : `${per}`;
-            instruction.innerHTML = `${blockLine}<br>${rd.title}: თითოეულზე ${perTxt} • დარჩა ${remaining}/${total}`;
-        } else {
-            instruction.innerHTML = `${blockLine}<hr style="border: none; border-top: 1px solid #e5e7eb; margin: 12px 0;">${getRoundInstruction(rd)}`;
-          }
+        function updateRoundInstruction() {
+            const rd = ROUNDS[currentRound];
+            if (!rd) { instruction.textContent = ''; return; }
+            const blockLine = getBlockSummary(currentRound);
+            if (rd.type === 'multi') {
+                const taken = Object.values(multiCounts).reduce((a, b) => a + b, 0);
+                const total = rd.total ?? 0;
+                const remaining = Math.max(0, total - taken);
+                const per = rd.penaltyPer || 0;
+                const perTxt = per >= 0 ? `+${per}` : `${per}`;
+                instruction.innerHTML = `${blockLine}<br>${rd.title}: თითოეულზე ${perTxt} • დარჩა ${remaining}/${total}`;
+            } else {
+                instruction.innerHTML = `${blockLine}<hr style="border: none; border-top: 1px solid #e5e7eb; margin: 12px 0;">${getRoundInstruction(rd)}`;
+            }
         }
 
         function startRound() {
@@ -568,21 +569,21 @@
                 renderFinishActionsInCard();
                 return;
             }
-            
+
             const rd = ROUNDS[currentRound];
             subtitle.textContent = `რაუნდი ${currentRound + 1} • ${rd.title} ${rd.icon}`;
             status.textContent = '';
             buttonsRow.innerHTML = '';
             renderInGameFooterActions();
-            
+
             // Show instruction card during gameplay
             const instructionCard = instruction ? instruction.closest('.card') : null;
             if (instructionCard) instructionCard.style.display = '';
-            
+
             // Clear finish actions when not finished
             if (finishActions) finishActions.innerHTML = '';
             updateRoundInstruction();
-            
+
             if (rd.type === 'king') {
                 question.innerHTML = `რაუნდი ${currentRound + 1}<br>ვინ წაიღო ${rd.title} ${rd.icon}?`;
                 players.forEach((p, idx) => {
@@ -623,15 +624,15 @@
             const player = players[whoIndex];
             const takenSoFar = Object.values(multiCounts).reduce((a, b) => a + b, 0);
             const remaining = totalRequired - takenSoFar;
-            
+
             if (remaining <= 0) { finalizeMulti(); return; }
-            
+
             // Auto-assign logic ONLY fires if we are not currently restoring an undo
             if (whoIndex === players.length - 1 && !restoring) {
                 pushSnapshot();
                 multiCounts[player] = remaining;
                 multiChosen[player] = true;
-                updateProvisionalMultiCells();  
+                updateProvisionalMultiCells();
                 updateRoundInstruction();
                 status.textContent = `${player} auto-assigned ${remaining}.`;
                 finalizeMulti(); return;
@@ -640,9 +641,9 @@
             question.innerHTML = `რაუნდი ${currentRound + 1}<br>${rd.title} — რამდენი წაიყვანა ${player}?`;
             updateRoundInstruction();
             buttonsRow.innerHTML = '';
-            
-            const cap = Math.min(10, remaining); 
-            
+
+            const cap = Math.min(10, remaining);
+
             if (whoIndex === players.length - 1) {
                 // If restoring on the last player, give them a single button to force confirmation
                 const b = el('button', { className: 'btn small', textContent: String(remaining) });
@@ -655,7 +656,7 @@
                     buttonsRow.appendChild(b);
                 }
             }
-            
+
             updateProvisionalMultiCells();
             updateRoundInstruction();
         }
@@ -671,16 +672,16 @@
             multiChosen[player] = true;
             updateRoundInstruction();
             updateProvisionalMultiCells();
-            
+
             if (safe === totalRequired) {
                 // this player took all
                 players.forEach(p => { if (p !== player) multiCounts[p] = 0; });
                 finalizeMulti(); return;
             }
-            
+
             const newTotal = Object.values(multiCounts).reduce((a, b) => a + b, 0);
             if (newTotal >= totalRequired) { finalizeMulti(); return; }
-            
+
             whoIndex++; askNextMulti();
         }
 
@@ -784,7 +785,55 @@
         // init
         subtitle.textContent = 'კინგის აპლიკაცია - ©JANO v1.1';
         updateUndoEnabled();
+
+        // Run this function when the page loads
+        function checkDeviceAndShowPrompt() {
+            // 1. Check if the app is ALREADY installed
+            // (We don't want to annoy them if they already have it!)
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+            if (isStandalone) {
+                console.log("App is already installed.");
+                return; // Stop running the code
+            }
+
+            // 2. Get the user's device info
+            const userAgent = window.navigator.userAgent.toLowerCase();
+
+            // 3. Detect iOS (iPhone, iPad, iPod)
+            const isIOS = /iphone|ipad|ipod/.test(userAgent);
+
+            // 4. Detect Android
+            const isAndroid = /android/.test(userAgent);
+
+            // 5. Show the correct prompt based on the device
+            if (isIOS) {
+                // Show your custom HTML pop-up telling them to tap "Share"
+                document.getElementById('ios-install-popup').style.display = 'block';
+            } else if (isAndroid) {
+                // Show your custom Android HTML pop-up or button
+                document.getElementById('android-install-popup').style.display = 'block';
+            }
+        }
+
+        // Trigger the check
+        checkDeviceAndShowPrompt();
     </script>
+
+    <div id="ios-install-popup"
+        style="display: none; position: fixed; bottom: 0; width: 100%; background: white; padding: 20px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 1000;">
+        <p><strong>Install our App!</strong></p>
+        <p>Tap the <strong>Share</strong> icon at the bottom of Safari, then scroll down and tap <strong>"Add to Home
+                Screen"</strong>.</p>
+        <button onclick="document.getElementById('ios-install-popup').style.display='none'">Close</button>
+    </div>
+
+    <div id="android-install-popup"
+        style="display: none; position: fixed; bottom: 0; width: 100%; background: white; padding: 20px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 1000;">
+        <p><strong>Install our App!</strong></p>
+        <p>Tap the menu icon (three dots) in the top right, then tap <strong>"Install App"</strong> or <strong>"Add to
+                Home Screen"</strong>.</p>
+        <button onclick="document.getElementById('android-install-popup').style.display='none'">Close</button>
+    </div>
 </body>
 
 </html>
